@@ -1,0 +1,84 @@
+<div class="orders" role="table" aria-label="Orders" [attr.aria-rowcount]="(total() ?? 0) + 1">
+  <div class="scroller">
+    <div class="row head" role="row" aria-rowindex="1">
+      <span role="columnheader">Order</span>
+      <span role="columnheader" [attr.aria-sort]="ariaSort('date')">
+        <button type="button" class="sort-btn" (click)="sortBy('date')">
+          Date
+          @if (sort().key === 'date') {
+            <app-icon [name]="sort().dir === 'asc' ? 'up' : 'down'" [size]="12" />
+          }
+        </button>
+      </span>
+      <span role="columnheader">Product</span>
+      <span role="columnheader">Category</span>
+      <span role="columnheader">Country</span>
+      <span role="columnheader">Channel</span>
+      <span role="columnheader">Device</span>
+      <span role="columnheader" class="num" [attr.aria-sort]="ariaSort('qty')">
+        <button type="button" class="sort-btn" (click)="sortBy('qty')">
+          Qty
+          @if (sort().key === 'qty') {
+            <app-icon [name]="sort().dir === 'asc' ? 'up' : 'down'" [size]="12" />
+          }
+        </button>
+      </span>
+      <span role="columnheader" class="num" [attr.aria-sort]="ariaSort('revenue')">
+        <button type="button" class="sort-btn" (click)="sortBy('revenue')">
+          Revenue
+          @if (sort().key === 'revenue') {
+            <app-icon [name]="sort().dir === 'asc' ? 'up' : 'down'" [size]="12" />
+          }
+        </button>
+      </span>
+      <span role="columnheader" class="num" [attr.aria-sort]="ariaSort('margin')">
+        <button type="button" class="sort-btn" (click)="sortBy('margin')">
+          Gross profit
+          @if (sort().key === 'margin') {
+            <app-icon [name]="sort().dir === 'asc' ? 'up' : 'down'" [size]="12" />
+          }
+        </button>
+      </span>
+      <span role="columnheader">Status</span>
+    </div>
+
+    <cdk-virtual-scroll-viewport [itemSize]="rowHeight" minBufferPx="400" maxBufferPx="800" class="viewport">
+      <div
+        *cdkVirtualFor="let row of rows(); let i = index; trackBy: trackRow; templateCacheSize: 0"
+        class="row"
+        role="row"
+        [attr.aria-rowindex]="i + 2"
+      >
+        @if (row) {
+          <span role="cell" class="mono">#{{ row.id }}</span>
+          <span role="cell">{{ row.date }}</span>
+          <span role="cell" class="ellipsis" [title]="row.product">{{ row.product }}</span>
+          <span role="cell" class="ellipsis">{{ labels.category.get(row.category) }}</span>
+          <span role="cell">{{ row.country }}</span>
+          <span role="cell" class="ellipsis">{{ labels.channel.get(row.channel) }}</span>
+          <span role="cell">{{ labels.device.get(row.device) }}</span>
+          <span role="cell" class="num">{{ row.qty }}</span>
+          <span role="cell" class="num">{{ row.revenue | fmt: 'currency' }}</span>
+          <span role="cell" class="num">{{ row.margin | fmt: 'currency' }}</span>
+          <span role="cell" class="status">
+            @if (row.refunded) {
+              <span class="badge badge-bad">Refunded</span>
+            }
+            @if (row.isNew) {
+              <span class="badge badge-good">New</span>
+            }
+          </span>
+        } @else {
+          <span role="cell" class="loading-cell"><span class="skeleton"></span></span>
+        }
+      </div>
+    </cdk-virtual-scroll-viewport>
+  </div>
+</div>
+<p class="footer muted" aria-live="polite">
+  @if (total() === null) {
+    Loading orders…
+  } @else {
+    {{ total()! | fmt: 'number' }} orders · rendered with virtual scrolling, fetched from the worker in pages of 200
+  }
+</p>

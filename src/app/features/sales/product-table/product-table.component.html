@@ -1,0 +1,77 @@
+<div class="toolbar">
+  <input class="input search" type="search" placeholder="Search products…" aria-label="Search products" [value]="search()" (input)="search.set($any($event.target).value)" />
+  <details class="column-chooser">
+    <summary class="btn btn-sm"><app-icon name="columns" /> Columns</summary>
+    <fieldset>
+      <legend class="visually-hidden">Visible columns</legend>
+      @for (column of allColumns; track column.key) {
+        <label>
+          <input type="checkbox" [checked]="visible().includes(column.key)" (change)="toggleColumn(column.key)" />
+          {{ column.label }}
+        </label>
+      }
+    </fieldset>
+  </details>
+  <span class="muted count" aria-live="polite">{{ rangeText() }}</span>
+</div>
+
+<div class="table-scroll">
+  <table class="data-table">
+    <thead>
+      <tr>
+        <th scope="col" [attr.aria-sort]="ariaSort('product')">
+          <button type="button" class="sort-btn" (click)="sortBy('product')">
+            Product
+            @if (sort().key === 'product') {
+              <app-icon [name]="sort().dir === 'asc' ? 'up' : 'down'" [size]="12" />
+            }
+          </button>
+        </th>
+        @for (column of columns(); track column.key) {
+          <th scope="col" [class.num]="column.numeric" [attr.aria-sort]="ariaSort(column.key)">
+            <button type="button" class="sort-btn" (click)="sortBy(column.key)">
+              {{ column.label }}
+              @if (sort().key === column.key) {
+                <app-icon [name]="sort().dir === 'asc' ? 'up' : 'down'" [size]="12" />
+              }
+            </button>
+          </th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (row of pageRows(); track row.code) {
+        <tr>
+          <th scope="row" class="product">{{ row.product }}</th>
+          @for (column of columns(); track column.key) {
+            <td [class.num]="column.numeric">
+              @switch (column.format) {
+                @case ('text') {
+                  {{ row[column.key] }}
+                }
+                @case ('delta') {
+                  <app-delta-badge [pct]="row.deltaPct" />
+                }
+                @default {
+                  {{ $any(row[column.key]) | fmt: $any(column.format) }}
+                }
+              }
+            </td>
+          }
+        </tr>
+      } @empty {
+        <tr>
+          <td [attr.colspan]="columns().length + 1" class="empty">No products match.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+@if (pageCount() > 1) {
+  <nav class="pager" aria-label="Product table pages">
+    <button type="button" class="btn btn-sm" [disabled]="page() === 0" (click)="page.set(page() - 1)">Previous</button>
+    <span>Page {{ page() + 1 }} of {{ pageCount() }}</span>
+    <button type="button" class="btn btn-sm" [disabled]="page() >= pageCount() - 1" (click)="page.set(page() + 1)">Next</button>
+  </nav>
+}

@@ -1,0 +1,58 @@
+<div class="page">
+  <header class="page-header">
+    <div>
+      <h1>Sales explorer</h1>
+      <nav class="crumbs" aria-label="Drill-down">
+        @if (drillLabel(); as label) {
+          <button type="button" (click)="setDrill(null)">All categories</button>
+          <app-icon name="chevronRight" [size]="14" />
+          <span aria-current="page"><strong>{{ label }}</strong></span>
+        } @else {
+          <span aria-current="page">All categories — click a bar to drill into a category’s products</span>
+        }
+      </nav>
+    </div>
+  </header>
+
+  @if (query.error(); as error) {
+    <p class="note" role="alert">Could not load data: {{ error }}</p>
+  }
+
+  @if (isEmpty()) {
+    <app-empty-state actionLabel="Reset filters" (action)="store.clearDimensions()" />
+  } @else {
+    <div class="grid">
+      <app-panel class="span-5" [heading]="drillLabel() ? 'Top products in ' + drillLabel() : 'Revenue by category'" subtitle="Selected period">
+        @if (breakdown(); as option) {
+          <app-chart [option]="option" [height]="360" [updating]="query.loading()" [label]="drillLabel() ? 'Bar chart of top products by revenue' : 'Bar chart of revenue by category; activate a bar to drill down'" (chartClick)="onBarClick($event)" />
+        } @else {
+          <div class="skeleton" style="height: 360px"></div>
+        }
+      </app-panel>
+
+      <app-panel class="span-7" [heading]="drillLabel() ? 'Top products over time' : 'Category revenue over time'" subtitle="Stacked; * partial period">
+        @if (trend(); as option) {
+          <app-chart [option]="option" [height]="360" [updating]="query.loading()" label="Stacked area chart of revenue over time." />
+        } @else {
+          <div class="skeleton" style="height: 360px"></div>
+        }
+      </app-panel>
+
+      <app-panel class="span-12" heading="Products" [subtitle]="drillLabel() ? 'Products in ' + drillLabel() : 'All products passing the filters'">
+        @if (query.value()) {
+          <app-product-table [rows]="productRows()" />
+        } @else {
+          <div class="skeleton" style="height: 420px"></div>
+        }
+      </app-panel>
+
+      @defer (on viewport) {
+        <app-panel class="span-12" heading="Orders" subtitle="Every order line in the selection — sortable, virtual-scrolled">
+          <app-orders-table [filters]="store.queryFilters()" [drill]="drillCode()" />
+        </app-panel>
+      } @placeholder {
+        <div class="span-12 skeleton panel-placeholder"></div>
+      }
+    </div>
+  }
+</div>
