@@ -1,0 +1,121 @@
+<div class="page">
+  <header class="page-header">
+    <div>
+      <h1>Marketing</h1>
+      <p>Spend efficiency by channel and where visitors drop out of the purchase funnel.</p>
+    </div>
+  </header>
+
+  @if (ignoresFilters()) {
+    <p class="note" role="note">Traffic, spend and funnel data are not split by product category or customer segment, so those filters are not applied on this page.</p>
+  }
+  @if (query.error(); as error) {
+    <p class="note" role="alert">Could not load data: {{ error }}</p>
+  }
+
+  <section class="kpi-grid" aria-label="Marketing metrics">
+    @if (query.initialLoading()) {
+      @for (i of [1, 2, 3, 4]; track i) {
+        <div class="skeleton" style="height: 110px; border-radius: var(--radius-lg)"></div>
+      }
+    } @else {
+      @for (kpi of kpis(); track kpi.id) {
+        <app-kpi-card [kpi]="kpi" />
+      }
+    }
+  </section>
+
+  <div class="grid">
+    <app-panel class="span-7" heading="Spend vs revenue by channel" subtitle="Same currency axis — the gap is the return">
+      @if (spendRevenue(); as option) {
+        <app-chart [option]="option" [height]="320" [updating]="query.loading()" label="Grouped bar chart comparing marketing spend and revenue per channel." />
+      } @else {
+        <div class="skeleton" style="height: 320px"></div>
+      }
+    </app-panel>
+
+    <app-panel class="span-5" heading="ROAS by channel" subtitle="Revenue per dollar spent; dashed line = break-even">
+      @if (roas(); as option) {
+        <app-chart [option]="option" [height]="320" [updating]="query.loading()" label="Bar chart of return on ad spend per channel." />
+      } @else {
+        <div class="skeleton" style="height: 320px"></div>
+      }
+    </app-panel>
+
+    <app-panel class="span-12" heading="Channel performance">
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th scope="col">Channel</th>
+              <th scope="col" class="num">Spend</th>
+              <th scope="col" class="num">Revenue</th>
+              <th scope="col" class="num">ROAS</th>
+              <th scope="col" class="num">Δ ROAS</th>
+              <th scope="col" class="num">New customers</th>
+              <th scope="col" class="num">CAC</th>
+              <th scope="col" class="num">Conv. rate</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of channelTable(); track row.label) {
+              <tr>
+                <th scope="row">{{ row.label }} @if (row.paid) {<span class="badge">paid</span>}</th>
+                <td class="num">{{ row.spend | fmt: 'currency' }}</td>
+                <td class="num">{{ row.revenue | fmt: 'currency' }}</td>
+                <td class="num">{{ row.roas | fmt: 'ratio' }}</td>
+                <td class="num"><app-delta-badge [pct]="row.roasDelta" /></td>
+                <td class="num">{{ row.newCustomers | fmt: 'number' }}</td>
+                <td class="num">{{ row.cac | fmt: 'currency' }}</td>
+                <td class="num">{{ row.cr | fmt: 'percent' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </app-panel>
+
+    @defer (on viewport) {
+      <app-panel class="span-5" heading="Purchase funnel" subtitle="Step conversion in brackets">
+        @if (funnel(); as option) {
+          <app-chart [option]="option" [height]="320" [updating]="query.loading()" label="Funnel chart from sessions to purchases with step conversion rates." />
+        }
+      </app-panel>
+
+      <app-panel class="span-7" heading="Step conversion" subtitle="Darker = better within each column; look for the pale cell">
+        <app-segmented panelActions label="Compare funnel" [options]="matrixOptions" [(value)]="matrixBy" />
+        <div class="table-scroll">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">{{ matrixBy() === 'channel' ? 'Channel' : 'Device' }}</th>
+                @for (label of stepLabels; track label) {
+                  <th scope="col" class="num">{{ label }}</th>
+                }
+                <th scope="col" class="num">Overall</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of matrix(); track row.code) {
+                <tr>
+                  <th scope="row">{{ row.label }}</th>
+                  @for (cell of row.cells; track $index) {
+                    <td class="num" [style.background]="cell.bg">{{ cell.value | fmt: 'percent' }}</td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </app-panel>
+
+      <app-panel class="span-12" heading="Spend and revenue over time" subtitle="* partial period">
+        @if (trend(); as option) {
+          <app-chart [option]="option" [height]="280" [updating]="query.loading()" label="Line chart of marketing spend and revenue over time." />
+        }
+      </app-panel>
+    } @placeholder {
+      <div class="span-12 skeleton panel-placeholder"></div>
+    }
+  </div>
+</div>
