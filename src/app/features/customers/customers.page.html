@@ -1,0 +1,80 @@
+<div class="page">
+  <header class="page-header">
+    <div>
+      <h1>Customers</h1>
+      <p>Retention by acquisition cohort, lifetime value, and who your customers are right now.</p>
+    </div>
+  </header>
+
+  <p class="note" role="note">
+    Customers are filtered by what they looked like at acquisition — country, first channel, first device and segment.
+    @if (ignoresCategory()) {
+      <strong>The category filter does not describe a customer and is ignored here.</strong>
+    }
+  </p>
+  @if (query.error(); as error) {
+    <p class="note" role="alert">Could not load data: {{ error }}</p>
+  }
+
+  @if (query.value(); as r) {
+    <dl class="stats">
+      <div class="stat">
+        <dt>Customers acquired in cohorts</dt>
+        <dd>{{ r.totals.customers | fmt: 'number' }}</dd>
+      </div>
+      <div class="stat">
+        <dt>Active in last 12 months</dt>
+        <dd>{{ r.totals.activeCustomers | fmt: 'number' }}</dd>
+      </div>
+      <div class="stat">
+        <dt>Repeat rate (12 months)</dt>
+        <dd>{{ r.totals.repeatRate | fmt: 'percent' }}</dd>
+      </div>
+    </dl>
+  } @else {
+    <div class="skeleton" style="height: 86px"></div>
+  }
+
+  <div class="grid">
+    <app-panel class="span-12" heading="Cohort retention" [subtitle]="cohortSubtitle()">
+      @if (heatmap(); as option) {
+        <app-chart
+          [option]="option"
+          [height]="heatmapHeight()"
+          [updating]="query.loading()"
+          label="Heatmap of the share of each monthly acquisition cohort that ordered again in each following month."
+        />
+      } @else {
+        <div class="skeleton" style="height: 420px"></div>
+      }
+    </app-panel>
+
+    @defer (on viewport) {
+      <app-panel class="span-7" heading="Lifetime value" subtitle="Average cumulative net revenue per customer by months since first order">
+        <app-segmented panelActions label="Group LTV" [options]="ltvOptions" [(value)]="ltvBy" />
+        @if (ltv(); as option) {
+          <app-chart [option]="option" [height]="320" [updating]="query.loading()" label="Line chart of cumulative revenue per customer by months since acquisition." />
+        }
+      </app-panel>
+
+      <app-panel class="span-5" heading="RFM segments" subtitle="Customers active in the 12 months to the end of the range">
+        @if (rfm(); as option) {
+          <app-chart [option]="option" [height]="240" [updating]="query.loading()" label="Bar chart of customers per RFM segment." />
+        }
+        <ul class="rules">
+          @for (rule of rules; track rule.code) {
+            <li><strong>{{ rule.label }}</strong> — {{ rule.rule }}</li>
+          }
+        </ul>
+      </app-panel>
+
+      <app-panel class="span-12" heading="New vs returning revenue" subtitle="By calendar month within the range">
+        @if (nvr(); as option) {
+          <app-chart [option]="option" [height]="280" [updating]="query.loading()" label="Stacked bar chart of revenue from new and returning customers per month." />
+        }
+      </app-panel>
+    } @placeholder {
+      <div class="span-12 skeleton panel-placeholder"></div>
+    }
+  </div>
+</div>
