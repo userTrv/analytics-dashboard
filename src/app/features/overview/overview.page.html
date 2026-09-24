@@ -1,0 +1,72 @@
+<div class="page">
+  <header class="page-header">
+    <div>
+      <h1>Overview</h1>
+      <p>Headline KPIs against the comparison period, revenue trends and automatic insights.</p>
+    </div>
+  </header>
+
+  @if (query.error(); as error) {
+    <p class="note" role="alert">Could not load data: {{ error }}</p>
+  }
+
+  <section class="kpi-grid" aria-label="Key metrics">
+    @if (query.initialLoading()) {
+      @for (i of [1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+        <div class="skeleton" style="height: 142px; border-radius: var(--radius-lg)"></div>
+      }
+    } @else {
+      @for (kpi of kpis(); track kpi.id) {
+        <app-kpi-card [kpi]="kpi" />
+      }
+    }
+  </section>
+
+  @if (isEmpty()) {
+    <app-empty-state actionLabel="Reset filters" (action)="store.clearDimensions()" />
+  } @else {
+    <div class="grid">
+      <app-panel class="span-8" heading="Revenue over time" [subtitle]="trendSubtitle()">
+        <app-segmented panelActions label="Granularity" [options]="granularities" [(value)]="granularity" />
+        @if (trendOption(); as option) {
+          <app-chart [option]="option" [height]="400" [updating]="query.loading()" label="Line chart of revenue over the selected period compared with the comparison period; anomalies are pinned." />
+        } @else {
+          <div class="skeleton" style="height: 400px"></div>
+        }
+      </app-panel>
+
+      <app-panel class="span-4" heading="Insights" subtitle="Generated from the data, not written by hand">
+        @if (query.value(); as r) {
+          <app-insights-panel [insights]="r.insights" [comparisonLabel]="comparisonLabel()" [hasComparison]="store.compare() !== 'none'" />
+        } @else {
+          <div class="skeleton" style="height: 280px"></div>
+        }
+      </app-panel>
+
+      @defer (on viewport) {
+        <app-panel class="span-7" heading="Revenue by channel" subtitle="Stacked by acquisition channel of the order">
+          @if (channelOption(); as option) {
+            <app-chart [option]="option" [height]="320" [updating]="query.loading()" label="Stacked bar chart of revenue per channel over time." />
+          }
+        </app-panel>
+        <app-panel class="span-5" heading="Top categories" subtitle="Click a bar to drill into its products">
+          @if (categoryOption(); as option) {
+            <app-chart [option]="option" [height]="320" [updating]="query.loading()" label="Horizontal bar chart of revenue by product category." (chartClick)="drillIntoCategory($event)" />
+          }
+        </app-panel>
+      } @placeholder {
+        <div class="span-12 skeleton panel-placeholder"></div>
+      }
+
+      @defer (on viewport) {
+        <app-panel class="span-12" heading="Geography" subtitle="Revenue by region and country — tile size is revenue">
+          @if (geoOption(); as option) {
+            <app-chart [option]="option" [height]="340" [updating]="query.loading()" label="Treemap of revenue by region and country." />
+          }
+        </app-panel>
+      } @placeholder {
+        <div class="span-12 skeleton panel-placeholder"></div>
+      }
+    </div>
+  }
+</div>
