@@ -1,0 +1,68 @@
+<button type="button" class="skip-link" (click)="skipToContent()">Skip to content</button>
+
+<app-sidebar
+  [collapsed]="collapsed() && !isMobile()"
+  [mobileOpen]="navOpen()"
+  [attr.inert]="isMobile() && !navOpen() ? '' : null"
+  (toggleCollapsed)="toggleCollapsed()"
+  (navigate)="navOpen.set(false)"
+/>
+@if (isMobile() && navOpen()) {
+  <div class="backdrop" (click)="navOpen.set(false)" aria-hidden="true"></div>
+}
+
+<div class="app-main">
+  <header class="app-header">
+    <button type="button" class="icon-btn btn-ghost menu-btn" aria-label="Open navigation" [attr.aria-expanded]="navOpen()" (click)="navOpen.set(true)">
+      <app-icon name="menu" [size]="18" />
+    </button>
+    <span class="page-title">{{ pageTitle() }}</span>
+
+    <div class="header-end">
+      @switch (data.status()) {
+        @case ('loading') {
+          <span class="status" role="status"><span class="dot pulse"></span>Generating dataset in a Web Worker…</span>
+        }
+        @case ('error') {
+          <span class="status error" role="alert">Data engine failed: {{ data.error() }}</span>
+        }
+        @case ('ready') {
+          <span class="status" [class.busy]="data.busy()">
+            <span class="dot"></span>
+            <span class="status-text">Synthetic data</span>
+          </span>
+        }
+      }
+      <button
+        type="button"
+        class="icon-btn btn-ghost"
+        (click)="theme.toggle()"
+        [attr.aria-label]="theme.theme() === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'"
+        [attr.aria-pressed]="theme.theme() === 'dark'"
+      >
+        <app-icon [name]="theme.theme() === 'dark' ? 'sun' : 'moon'" [size]="18" />
+      </button>
+    </div>
+  </header>
+
+  <app-filter-bar />
+
+  <main #main id="main" tabindex="-1">
+    <router-outlet />
+  </main>
+
+  <footer class="app-footer">
+    <span>Pulse Analytics — a portfolio demo on a deterministic synthetic dataset. No real customers, no network calls.</span>
+    <span class="perf" aria-live="off">
+      @if (datasetSummary(); as summary) {
+        {{ summary }}
+      }
+      @if (perf.last(); as sample) {
+        · last filter update {{ sample.totalMs.toFixed(0) }} ms
+      }
+      @if (data.lastQuery(); as q) {
+        · worker {{ q.timing.cached ? 'cache hit' : q.timing.computeMs.toFixed(1) + ' ms' }}
+      }
+    </span>
+  </footer>
+</div>

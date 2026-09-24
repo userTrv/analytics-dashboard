@@ -1,0 +1,63 @@
+<button
+  #trigger
+  type="button"
+  class="trigger"
+  cdkOverlayOrigin
+  #origin="cdkOverlayOrigin"
+  [class.active]="value().length > 0"
+  [attr.aria-expanded]="open()"
+  [attr.aria-controls]="open() ? panelId : null"
+  aria-haspopup="dialog"
+  (click)="toggleOpen()"
+>
+  <span class="label">{{ label() }}</span>
+  <span class="summary">{{ summary() }}</span>
+  <app-icon name="chevronDown" [size]="14" />
+</button>
+
+<ng-template
+  cdkConnectedOverlay
+  [cdkConnectedOverlayOrigin]="origin"
+  [cdkConnectedOverlayOpen]="open()"
+  [cdkConnectedOverlayPositions]="positions"
+  [cdkConnectedOverlayPush]="true"
+  (overlayOutsideClick)="close(false)"
+  (overlayKeydown)="onOverlayKeydown($event)"
+  (detach)="close(false)"
+>
+  <div class="menu" role="dialog" [id]="panelId" [attr.aria-label]="label() + ' filter'" cdkTrapFocus [cdkTrapFocusAutoCapture]="true">
+    @if (options().length > 8) {
+      <input
+        class="input search"
+        type="search"
+        placeholder="Search…"
+        [attr.aria-label]="'Search ' + label()"
+        [value]="search()"
+        (input)="search.set($any($event.target).value)"
+      />
+    }
+    <div class="menu-actions">
+      <button type="button" class="btn btn-ghost btn-sm" (click)="selectOnly([])" [disabled]="value().length === 0">Clear</button>
+      <button type="button" class="btn btn-ghost btn-sm" (click)="close()">Done</button>
+    </div>
+    <div class="options">
+      @for (group of groups(); track group.name) {
+        <fieldset>
+          @if (group.name) {
+            <legend>{{ group.name }}</legend>
+          } @else {
+            <legend class="visually-hidden">{{ label() }}</legend>
+          }
+          @for (option of group.options; track option.value) {
+            <label class="option">
+              <input type="checkbox" [checked]="selected().has(option.value)" (change)="toggleOption(option.value)" />
+              <span>{{ option.label }}</span>
+            </label>
+          }
+        </fieldset>
+      } @empty {
+        <p class="none">No matches</p>
+      }
+    </div>
+  </div>
+</ng-template>

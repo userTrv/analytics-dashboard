@@ -1,0 +1,141 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 8px 12px;
+  font: inherit;
+  color: var(--on-accent);
+  background: var(--accent);
+  border: 0;
+  border-radius: var(--radius-sm);
+  transform: translateY(-200%);
+
+  &:focus-visible {
+    transform: none;
+  }
+}
+
+.app-main {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  margin-left: var(--sidebar-width);
+  transition: margin-left 160ms ease;
+}
+
+:host(.sidebar-collapsed) .app-main {
+  margin-left: var(--sidebar-collapsed);
+}
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--header-height);
+  padding: 0 24px;
+  background: var(--surface-1);
+  border-bottom: 1px solid var(--border);
+}
+
+.page-title {
+  font-weight: 650;
+  font-size: 15px;
+}
+
+.menu-btn {
+  display: none;
+}
+
+.header-end {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--text-secondary);
+
+  &.error {
+    color: var(--bad);
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--good);
+  }
+
+  &.busy .dot,
+  .dot.pulse {
+    background: var(--accent);
+    animation: blink 1s ease-in-out infinite;
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+main {
+  flex: 1;
+  outline: none;
+}
+
+.app-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 16px;
+  padding: 16px 24px 24px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 35;
+  background: rgb(0 0 0 / 0.4);
+}
+
+@media (max-width: 900px) {
+  .app-main,
+  :host(.sidebar-collapsed) .app-main {
+    margin-left: 0;
+  }
+
+  .menu-btn {
+    display: inline-flex;
+  }
+
+  .app-header {
+    padding: 0 12px;
+  }
+
+  .app-footer {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .status-text {
+    display: none;
+  }
+}

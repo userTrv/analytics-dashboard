@@ -1,0 +1,78 @@
+// Print stylesheet: the report builder's "Print / Save as PDF" prints only the report.
+
+.print-only {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 12mm;
+  }
+
+  :root {
+    color-scheme: light;
+    --surface-0: #fff;
+    --surface-1: #fff;
+    --surface-2: #f3f3f1;
+    --text-primary: #000;
+    --text-secondary: #333;
+    --border: #d6d6d1;
+  }
+
+  body {
+    background: #fff;
+    font-size: 11px;
+  }
+
+  .no-print,
+  app-sidebar,
+  app-filter-bar,
+  .app-header,
+  .app-footer {
+    display: none !important;
+  }
+
+  .print-only {
+    display: block;
+  }
+
+  .app-main {
+    margin: 0 !important;
+  }
+
+  .page {
+    padding: 0;
+    max-width: none;
+  }
+
+  .panel {
+    box-shadow: none;
+    border: 0;
+    padding: 0;
+    break-inside: avoid;
+  }
+
+  .table-scroll {
+    overflow: visible;
+    max-height: none !important;
+    border: 0;
+  }
+
+  .data-table {
+    font-size: 10px;
+
+    th,
+    td {
+      padding: 4px 6px;
+    }
+
+    thead {
+      display: table-header-group;
+    }
+
+    tr {
+      break-inside: avoid;
+    }
+  }
+}

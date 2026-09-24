@@ -1,0 +1,87 @@
+<section class="filter-bar" aria-label="Filters">
+  <div class="row primary">
+    <label class="field date-field">
+      <span>Date range</span>
+      <select class="select" (change)="onPreset($any($event.target).value)">
+        @for (preset of presets; track preset.value) {
+          <option [value]="preset.value" [selected]="preset.value === store.preset()">{{ preset.label }}</option>
+        }
+        <option value="custom" [selected]="store.preset() === 'custom'">Custom range…</option>
+      </select>
+    </label>
+
+    @if (store.preset() === 'custom') {
+      <label class="field">
+        <span>From</span>
+        <input class="input" type="date" [min]="minDate" [max]="maxDate" [value]="store.range().start" (change)="onCustomDate('start', $any($event.target).value)" />
+      </label>
+      <label class="field">
+        <span>To</span>
+        <input class="input" type="date" [min]="minDate" [max]="maxDate" [value]="store.range().end" (change)="onCustomDate('end', $any($event.target).value)" />
+      </label>
+    }
+
+    <label class="field">
+      <span>Compare to</span>
+      <select class="select" (change)="onCompare($any($event.target).value)">
+        @for (mode of compareModes; track mode.value) {
+          <option [value]="mode.value" [selected]="mode.value === store.compare()">{{ mode.label }}</option>
+        }
+      </select>
+    </label>
+
+    <p class="range-text" aria-live="polite">
+      <strong>{{ rangeText() }}</strong>
+      @if (comparisonText(); as cmp) {
+        <span class="muted"> vs {{ cmp }}</span>
+      }
+      @if (store.comparisonPartial()) {
+        <span class="badge badge-warn" title="Part of the comparison period is before the first day of data">partial comparison</span>
+      }
+    </p>
+
+    <button
+      type="button"
+      class="btn toggle-more"
+      [attr.aria-expanded]="expanded()"
+      aria-controls="dimension-filters"
+      (click)="expanded.set(!expanded())"
+    >
+      <app-icon name="filter" />
+      Filters
+      @if (store.activeDimensionCount()) {
+        <span class="count">{{ store.activeDimensionCount() }}</span>
+      }
+    </button>
+  </div>
+
+  <div class="row dimensions" id="dimension-filters" [class.open]="expanded()">
+    @for (control of controls; track control.key) {
+      <app-multi-select
+        [label]="control.label"
+        [options]="options()[control.key]"
+        [value]="store.state()[control.key]"
+        (valueChange)="onDimension(control.key, $event)"
+      />
+    }
+    @if (store.activeDimensionCount()) {
+      <button type="button" class="btn btn-ghost" (click)="store.clearDimensions()">
+        <app-icon name="reset" />
+        Reset filters
+      </button>
+    }
+  </div>
+
+  @if (chips().length) {
+    <ul class="chips" aria-label="Active filters">
+      @for (chip of chips(); track chip.key + chip.code) {
+        <li class="chip">
+          <span class="muted">{{ chip.dimension }}:</span> {{ chip.label }}
+          <button type="button" [attr.aria-label]="'Remove ' + chip.dimension + ' ' + chip.label" (click)="store.toggle(chip.key, chip.code)">
+            <app-icon name="x" [size]="12" />
+          </button>
+        </li>
+      }
+    </ul>
+  }
+</section>
