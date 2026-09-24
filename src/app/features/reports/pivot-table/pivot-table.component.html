@@ -1,0 +1,64 @@
+@if (hasGroups()) {
+  <div class="tree-actions no-print">
+    <button type="button" class="btn btn-ghost btn-sm" (click)="setAll(true)">Expand all</button>
+    <button type="button" class="btn btn-ghost btn-sm" (click)="setAll(false)">Collapse all</button>
+  </div>
+}
+<div class="table-scroll pivot-scroll">
+  <table class="data-table pivot">
+    <caption class="visually-hidden">Pivot of {{ metricLabels().join(', ') }} by {{ rowHeader() }}</caption>
+    <thead>
+      @if (columnLabels().length) {
+        <tr>
+          <th scope="col" rowspan="2" class="row-head">{{ rowHeader() }}</th>
+          @for (col of columnLabels(); track $index) {
+            <th scope="colgroup" [attr.colspan]="metricLabels().length" class="col-group">{{ col }}</th>
+          }
+          <th scope="colgroup" [attr.colspan]="metricLabels().length" class="col-group total">Total</th>
+        </tr>
+        <tr>
+          @for (col of columnLabels(); track $index) {
+            @for (m of metricLabels(); track $index) {
+              <th scope="col" class="num">{{ m }}</th>
+            }
+          }
+          @for (m of metricLabels(); track $index) {
+            <th scope="col" class="num total">{{ m }}</th>
+          }
+        </tr>
+      } @else {
+        <tr>
+          <th scope="col" class="row-head">{{ rowHeader() }}</th>
+          @for (m of metricLabels(); track $index) {
+            <th scope="col" class="num">{{ m }}</th>
+          }
+        </tr>
+      }
+    </thead>
+    <tbody>
+      @for (row of visibleRows(); track row.key) {
+        <tr [class.group]="!row.node.leaf" [attr.data-level]="row.level">
+          <th scope="row" class="row-label" [style.padding-left.px]="12 + row.level * 18">
+            @if (!row.node.leaf) {
+              <button type="button" class="toggle" [attr.aria-expanded]="row.expanded" [attr.aria-label]="(row.expanded ? 'Collapse ' : 'Expand ') + row.label" (click)="toggle(row.key)">
+                <app-icon [name]="row.expanded ? 'chevronDown' : 'chevronRight'" [size]="14" />
+              </button>
+            }
+            <span>{{ row.label }}</span>
+          </th>
+          @for (cell of row.cells; track $index) {
+            <td class="num" [class.total]="cell.total" [style.background]="cell.bg">{{ cell.text }}</td>
+          }
+        </tr>
+      }
+    </tbody>
+    <tfoot>
+      <tr class="grand">
+        <th scope="row">Grand total</th>
+        @for (value of grandTotal(); track $index) {
+          <td class="num">{{ value }}</td>
+        }
+      </tr>
+    </tfoot>
+  </table>
+</div>

@@ -1,0 +1,73 @@
+<div class="page">
+  <header class="page-header no-print">
+    <div>
+      <h1>Report builder</h1>
+      <p>Pivot any dimension against any metric. The whole definition lives in the URL — share it, bookmark it, save it.</p>
+    </div>
+  </header>
+
+  <header class="print-only print-header">
+    <h1>{{ activeReport()?.name ?? 'Pulse Analytics report' }}</h1>
+    <p>{{ filterSummary() }}</p>
+    <p class="muted">Generated {{ generatedAt().toLocaleString('en-US') }} · Pulse Analytics · synthetic demo data</p>
+  </header>
+
+  <div class="layout">
+    <div class="main">
+      <app-panel class="no-print" heading="Definition">
+        <app-report-designer [view]="view()" (viewChange)="setView($event)" />
+      </app-panel>
+
+      <app-panel [heading]="activeReport()?.name ?? 'Result'" [subtitle]="query.value() ? (query.value()!.sourceRows | fmt: 'number') + ' order lines aggregated' : null">
+        <div panelActions class="toolbar no-print">
+          <button type="button" class="btn btn-sm" (click)="exportCsv()" [disabled]="!query.value()"><app-icon name="download" /> CSV</button>
+          <button type="button" class="btn btn-sm" (click)="print()" [disabled]="!query.value()"><app-icon name="printer" /> Print / PDF</button>
+          <button type="button" class="btn btn-sm" (click)="copyLink()"><app-icon name="link" /> Copy link</button>
+        </div>
+
+        @if (query.error(); as error) {
+          <p class="note" role="alert">Could not build the report: {{ error }}</p>
+        }
+        @if (query.value(); as result) {
+          @if (result.sourceRows === 0) {
+            <app-empty-state actionLabel="Reset filters" (action)="store.clearDimensions()" />
+          } @else {
+            @if (chart(); as option) {
+              <app-chart class="report-chart" [option]="option" [height]="280" [updating]="query.loading()" label="Bar chart of the report's top-level rows for the first metric." />
+            }
+            <app-pivot-table [result]="result" [config]="view().config" [heat]="view().heat" [class.is-updating]="query.loading()" />
+          }
+        } @else {
+          <div class="skeleton" style="height: 420px"></div>
+        }
+      </app-panel>
+    </div>
+
+    <aside class="side no-print">
+      <app-panel heading="Save report" subtitle="Stored in this browser (localStorage)">
+        <form class="save" (submit)="$event.preventDefault(); save()">
+          <input class="input" [value]="name()" (input)="name.set($any($event.target).value)" placeholder="Report name" aria-label="Report name" maxlength="80" />
+          <button type="submit" class="btn btn-primary"><app-icon name="save" /> Save as new</button>
+        </form>
+        @if (activeReport(); as report) {
+          <button type="button" class="btn" (click)="update()">Update “{{ report.name }}”</button>
+        }
+      </app-panel>
+      <app-panel heading="Saved reports">
+        <app-saved-reports
+          [reports]="storage.reports()"
+          [activeId]="activeId()"
+          (open)="openReport($event)"
+          (rename)="storage.update($event.id, { name: $event.name })"
+          (duplicate)="duplicate($event)"
+          (remove)="remove($event)"
+        />
+      </app-panel>
+    </aside>
+  </div>
+
+  <p class="visually-hidden" role="status" aria-live="polite">{{ status() }}</p>
+  @if (status()) {
+    <div class="toast no-print" aria-hidden="true">{{ status() }}</div>
+  }
+</div>

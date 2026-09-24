@@ -1,0 +1,34 @@
+<ul class="list">
+  @for (report of reports(); track report.id) {
+    <li [class.active]="report.id === activeId()">
+      @if (editing() === report.id) {
+        <form class="rename" (submit)="$event.preventDefault(); commitRename(report.id, nameInput.value)">
+          <input #nameInput class="input" [value]="report.name" aria-label="Report name" (keydown.escape)="editing.set(null)" />
+          <button type="submit" class="btn btn-sm btn-primary">Save</button>
+        </form>
+      } @else {
+        <button type="button" class="open" (click)="open.emit(report)" [attr.aria-current]="report.id === activeId() ? 'true' : null">
+          <span class="name">{{ report.name }}</span>
+          <span class="meta">Updated {{ formatDate(report.updatedAt.slice(0, 10)) }}</span>
+        </button>
+        <div class="actions">
+          <button type="button" class="icon-btn btn-ghost btn-sm" (click)="editing.set(report.id)" [attr.aria-label]="'Rename ' + report.name">
+            <app-icon name="edit" [size]="14" />
+          </button>
+          <button type="button" class="icon-btn btn-ghost btn-sm" (click)="duplicate.emit(report.id)" [attr.aria-label]="'Duplicate ' + report.name">
+            <app-icon name="copy" [size]="14" />
+          </button>
+          @if (confirming() === report.id) {
+            <button type="button" class="btn btn-sm danger" (click)="confirmDelete(report.id)" (blur)="confirming.set(null)">Delete?</button>
+          } @else {
+            <button type="button" class="icon-btn btn-ghost btn-sm" (click)="confirmDelete(report.id)" [attr.aria-label]="'Delete ' + report.name">
+              <app-icon name="trash" [size]="14" />
+            </button>
+          }
+        </div>
+      }
+    </li>
+  } @empty {
+    <li class="empty">No saved reports yet. Build one and press “Save”.</li>
+  }
+</ul>

@@ -1,0 +1,112 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.tree-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.pivot-scroll {
+  max-height: 620px;
+}
+
+.pivot {
+  th.row-head,
+  th.row-label,
+  .grand th {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: var(--surface-1);
+    min-width: 200px;
+    max-width: 320px;
+    text-align: left;
+  }
+
+  thead th.row-head {
+    z-index: 2;
+    background: var(--surface-2);
+  }
+
+  .col-group {
+    text-align: center;
+    border-left: 1px solid var(--border);
+  }
+
+  .total {
+    font-weight: 600;
+  }
+
+  td.total {
+    background: var(--surface-2);
+  }
+
+  .row-label {
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    span {
+      vertical-align: middle;
+    }
+  }
+
+  tr.group td,
+  tr.group th {
+    font-weight: 650;
+    background: var(--surface-2);
+  }
+
+  tr.group[data-level='0'] th,
+  tr.group[data-level='0'] td {
+    border-top: 1px solid var(--border-strong);
+  }
+
+  .toggle {
+    display: inline-grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    margin: 0 4px 0 -4px;
+    padding: 0;
+    color: var(--text-secondary);
+    background: none;
+    border: 0;
+    border-radius: 4px;
+    cursor: pointer;
+    vertical-align: middle;
+
+    &:hover {
+      background: var(--border);
+    }
+  }
+
+  tfoot .grand th,
+  tfoot .grand td {
+    position: sticky;
+    bottom: 0;
+    font-weight: 700;
+    background: var(--surface-2);
+    border-top: 2px solid var(--border-strong);
+  }
+
+  tfoot .grand th {
+    z-index: 2;
+  }
+}
+
+@media print {
+  .pivot-scroll {
+    max-height: none;
+  }
+
+  .pivot tfoot .grand th,
+  .pivot tfoot .grand td {
+    position: static;
+  }
+}

@@ -1,0 +1,81 @@
+<form class="designer" (submit)="$event.preventDefault()" aria-label="Report definition">
+  <fieldset>
+    <legend>Rows</legend>
+    @for (dim of config().rows; track $index; let i = $index; let last = $last; let first = $first) {
+      <div class="line">
+        <select class="select" [attr.aria-label]="'Row dimension ' + (i + 1)" (change)="setRow(i, $any($event.target).value)">
+          @for (d of dimensions; track d) {
+            @if (d === dim || !isUsed(d)) {
+              <option [value]="d" [selected]="d === dim">{{ dimensionLabels[d] }}</option>
+            }
+          }
+        </select>
+        <button type="button" class="icon-btn btn-ghost btn-sm" [disabled]="first" (click)="moveRow(i, -1)" [attr.aria-label]="'Move ' + dimensionLabels[dim] + ' up'">
+          <app-icon name="up" [size]="14" />
+        </button>
+        <button type="button" class="icon-btn btn-ghost btn-sm" [disabled]="last" (click)="moveRow(i, 1)" [attr.aria-label]="'Move ' + dimensionLabels[dim] + ' down'">
+          <app-icon name="down" [size]="14" />
+        </button>
+        <button type="button" class="icon-btn btn-ghost btn-sm" [disabled]="config().rows.length === 1" (click)="removeRow(i)" [attr.aria-label]="'Remove ' + dimensionLabels[dim]">
+          <app-icon name="x" [size]="14" />
+        </button>
+      </div>
+    }
+    @if (config().rows.length < maxRows) {
+      <button type="button" class="btn btn-ghost btn-sm add" (click)="addRow()"><app-icon name="plus" [size]="14" /> Add row level</button>
+    }
+  </fieldset>
+
+  <fieldset>
+    <legend>Columns</legend>
+    <select class="select" aria-label="Column dimension" (change)="setColumns($any($event.target).value)">
+      <option value="" [selected]="config().columns === null">None</option>
+      @for (d of dimensions; track d) {
+        @if (!config().rows.includes(d)) {
+          <option [value]="d" [selected]="d === config().columns">{{ dimensionLabels[d] }}</option>
+        }
+      }
+    </select>
+  </fieldset>
+
+  <fieldset>
+    <legend>Metrics</legend>
+    @for (metric of config().metrics; track $index; let i = $index) {
+      <div class="line">
+        <select class="select" [attr.aria-label]="'Metric ' + (i + 1)" (change)="setMetricField(i, $any($event.target).value)">
+          @for (f of fields; track f) {
+            <option [value]="f" [selected]="f === metric.field">{{ fieldLabels[f] }}</option>
+          }
+        </select>
+        @if (fieldAggs[metric.field].length > 1) {
+          <select class="select agg" [attr.aria-label]="'Aggregation for metric ' + (i + 1)" (change)="setMetricAgg(i, $any($event.target).value)">
+            @for (a of fieldAggs[metric.field]; track a) {
+              <option [value]="a" [selected]="a === metric.agg">{{ aggLabels[a] }}</option>
+            }
+          </select>
+        } @else {
+          <span class="agg-fixed">{{ aggLabels[metric.agg] }}</span>
+        }
+        <button type="button" class="icon-btn btn-ghost btn-sm" [disabled]="config().metrics.length === 1" (click)="removeMetric(i)" [attr.aria-label]="'Remove metric ' + metricNames()[i]">
+          <app-icon name="x" [size]="14" />
+        </button>
+      </div>
+    }
+    @if (config().metrics.length < maxMetrics) {
+      <button type="button" class="btn btn-ghost btn-sm add" (click)="addMetric()"><app-icon name="plus" [size]="14" /> Add metric</button>
+    }
+  </fieldset>
+
+  <fieldset>
+    <legend>Sort &amp; display</legend>
+    <select class="select" aria-label="Sort rows" (change)="setSort($any($event.target).value)">
+      <option value="label" [selected]="sortValue() === 'label'">Natural order</option>
+      @for (name of metricNames(); track $index; let i = $index) {
+        <option [value]="i + ':desc'" [selected]="sortValue() === i + ':desc'">{{ name }} — high to low</option>
+        <option [value]="i + ':asc'" [selected]="sortValue() === i + ':asc'">{{ name }} — low to high</option>
+      }
+    </select>
+    <label class="check"><input type="checkbox" [checked]="view().heat" (change)="setHeat($any($event.target).checked)" /> Heat formatting</label>
+    <label class="check"><input type="checkbox" [checked]="view().chart === 'bar'" (change)="setChart($any($event.target).checked)" /> Chart of top-level rows</label>
+  </fieldset>
+</form>
