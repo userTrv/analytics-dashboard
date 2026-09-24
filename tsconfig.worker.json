@@ -1,0 +1,9 @@
+/* Web Worker build config — the worker must stay DOM-free and framework-free. */
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["es2022", "webworker"],
+    "types": []
+  },
+  "include": ["src/**/*.worker.ts"]
+}
