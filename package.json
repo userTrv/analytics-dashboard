@@ -34,8 +34,8 @@
     "eslint": "^10.9.1",
     "jsdom": "^30.0.0",
     "prettier": "^3.8.1",
-    "typescript": "~6.0.2",
-    "typescript-eslint": "8.69.0",
+    "typescript": "~7.0.2",
+    "typescript-eslint": "8.70.1",
     "vitest": "^5.0.0"
   },
   "description": "Pulse Analytics \u2014 an in-browser BI dashboard built with Angular 22, signals and a Web Worker aggregation engine.",
